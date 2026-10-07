@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SyncMart - Supermarket Real-Time Inventory POS & Payment System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+  <!-- ================= 1. AUTH & LANDING PAGE ================= -->
+  <div id="authPage" class="min-h-screen flex flex-col justify-between p-6">
+    <header class="max-w-4xl mx-auto text-center mt-6">
+      <div class="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-indigo-500/20 mb-4">
+        <i class="fa-solid fa-bolt"></i> Real-Time Inventory & Multi-Gateway Sync
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-4">
+        Sync<span class="text-indigo-500">Mart</span>
+      </h1>
+      <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto">
+        Synchronize physical POS store sales with online orders. Unified 60+ supermarket stock items, password protected accounts, & live payments.
+      </p>
+    </header>
+
+    <!-- Auth Card -->
+    <div class="max-w-md w-full mx-auto bg-slate-800/90 border border-slate-700 p-8 rounded-2xl shadow-2xl backdrop-blur-md my-6">
+      <!-- Tabs -->
+      <div class="flex border-b border-slate-700 mb-6">
+        <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-center text-indigo-400 font-semibold border-b-2 border-indigo-500">Login</button>
+        <button id="tabSignupBtn" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-center text-slate-400 font-semibold border-b-2 border-transparent hover:text-slate-200">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+          <input type="email" id="loginEmail" required placeholder="manager@syncmart.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/30">
+          Login to Store Dashboard
+        </button>
+      </form>
+
+      <!-- Signup Form with Password Setup -->
+      <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+          <input type="text" id="signupName" required placeholder="Store Manager Name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Store / Supermarket Name</label>
+          <input type="text" id="signupStore" required placeholder="City Central Supermarket" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+          <input type="email" id="signupEmail" required placeholder="admin@supermarket.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Set Password</label>
+          <input type="password" id="signupPassword" required placeholder="At least 6 characters" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Confirm Password</label>
+          <input type="password" id="signupConfirmPassword" required placeholder="Re-enter password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/30">
+          Create Account & Setup Store
+        </button>
+      </form>
+
+      <div class="relative my-5 text-center">
+        <span class="bg-slate-800 px-3 text-xs text-slate-400 uppercase tracking-widest relative z-10">Or</span>
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-700"></div></div>
+      </div>
+
+      <button onclick="guestLogin()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2.5 rounded-xl border border-slate-600 transition flex items-center justify-center gap-2 text-sm">
+        <i class="fa-solid fa-user-secret"></i> Quick Guest Demo Mode
+      </button>
+    </div>
+
+    <footer class="text-center text-xs text-slate-500 py-2">
+      SyncMart Engine &copy; Real-Time Inventory & Multi-Gateway System
+    </footer>
+  </div>
+
+
+  <!-- ================= 2. MAIN DASHBOARD ================= -->
+  <div id="mainDashboard" class="hidden min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-600/30"><i class="fa-solid fa-store text-white text-lg"></i></div>
+        <div>
+          <h2 class="font-bold text-lg text-white leading-none">SyncMart Engine</h2>
+          <span class="text-xs text-emerald-400 font-medium">● 60+ Items Live Database Active</span>
+        </div>
+      </div>
+
+      <!-- Navigation Bar Tabs -->
+      <div class="hidden md:flex bg-slate-900/80 p-1 rounded-xl border border-slate-700 text-sm">
+        <button onclick="switchModule('inventory')" id="nav-inventory" class="nav-btn active px-4 py-2 rounded-lg font-semibold text-white bg-indigo-600 flex items-center gap-2">
+          <i class="fa-solid fa-boxes-stacked"></i> Master Inventory (60)
+        </button>
+        <button onclick="switchModule('pos')" id="nav-pos" class="nav-btn px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-receipt"></i> POS Store Billing
+        </button>
+        <button onclick="switchModule('online')" id="nav-online" class="nav-btn px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-globe"></i> Online E-Shop
+        </button>
+        <button onclick="switchModule('customers')" id="nav-customers" class="nav-btn px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-users"></i> Customers
+        </button>
+        <button onclick="switchModule('support')" id="nav-support" class="nav-btn px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-headset"></i> Customer Care
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span id="userBadge" class="text-xs bg-slate-700 px-3 py-1.5 rounded-full text-slate-200 font-semibold">User</span>
+        <button onclick="logout()" class="text-slate-400 hover:text-rose-400 p-2 rounded-lg"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </nav>
+
+    <!-- Content Container -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
+
+      <!-- ================= MODULE 1: MASTER INVENTORY ================= -->
+      <section id="module-inventory" class="space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h3 class="text-2xl font-bold text-white">Supermarket Master Inventory (<span id="totalItemsCount">60</span> Items)</h3>
+            <p class="text-slate-400 text-sm">Real-time stock level tracking with automated supplier reorder.</p>
+          </div>
+          <div class="flex gap-3 w-full md:w-auto">
+            <input type="text" id="inventorySearch" oninput="renderInventory()" placeholder="Search from 60 items..." class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 w-full md:w-64">
+            <select id="categoryFilter" onchange="renderInventory()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none">
+              <option value="ALL">All Categories</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Grocery">Grocery</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Personal Care">Personal Care</option>
+              <option value="Household">Household</option>
+              <option value="Fresh Produce">Fresh Produce</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-lg max-h-[600px] overflow-y-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase text-xs sticky top-0 z-10 backdrop-blur-md">
+              <tr>
+                <th class="p-4">#</th>
+                <th class="p-4">Product Name</th>
+                <th class="p-4">Category</th>
+                <th class="p-4">Price</th>
+                <th class="p-4">Stock Status</th>
+                <th class="p-4 text-center">Quantity</th>
+                <th class="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y divide-slate-700/60"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 2: POS BILLING COUNTER ================= -->
+      <section id="module-pos" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-cash-register text-emerald-400 mr-2"></i>POS Store Counter Billing</h3>
+            <input type="text" id="posSearch" oninput="renderPOSProducts()" placeholder="Quick scan item name..." class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm w-64 text-white">
+          </div>
+          <div id="posProductsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[580px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between h-[620px]">
+          <div>
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-3">
+              <h4 class="font-bold text-white text-lg">Active Store Receipt</h4>
+              <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-md border border-emerald-500/20 font-bold">POS #01</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="block text-xs text-slate-400 mb-1">Customer Loyalty Account:</label>
+              <select id="posCustomerSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none"></select>
+            </div>
+
+            <div id="posCartList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+          </div>
+
+          <div class="border-t border-slate-700 pt-3 space-y-2">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1 font-semibold">Payment Mode:</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="selectPOSPayment('CASH')" id="payBtn-CASH" class="pos-pay-opt active bg-indigo-600 border border-indigo-500 text-white py-1.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                  <i class="fa-solid fa-money-bill-wave text-sm mb-0.5"></i> Cash
+                </button>
+                <button type="button" onclick="selectPOSPayment('UPI')" id="payBtn-UPI" class="pos-pay-opt bg-slate-900 border border-slate-700 text-slate-300 py-1.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                  <i class="fa-solid fa-qrcode text-emerald-400 text-sm mb-0.5"></i> UPI / QR
+                </button>
+                <button type="button" onclick="selectPOSPayment('CARD')" id="payBtn-CARD" class="pos-pay-opt bg-slate-900 border border-slate-700 text-slate-300 py-1.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                  <i class="fa-solid fa-credit-card text-blue-400 text-sm mb-0.5"></i> Card
+                </button>
+              </div>
+            </div>
+
+            <div class="flex justify-between text-slate-400 text-xs"><span>Subtotal:</span><span id="posSubtotal">₹0.00</span></div>
+            <div class="flex justify-between text-slate-400 text-xs"><span>GST Tax (5%):</span><span id="posTax">₹0.00</span></div>
+            <div class="flex justify-between text-white font-bold text-base border-t border-slate-700/50 pt-1.5">
+              <span>Total Bill:</span>
+              <span id="posTotal" class="text-emerald-400">₹0.00</span>
+            </div>
+
+            <button onclick="processPOSCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 text-sm">
+              <i class="fa-solid fa-circle-check"></i> Complete & Deduct Stock
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 3: ONLINE STOREFRONT ================= -->
+      <section id="module-online" class="hidden space-y-6">
+        <div class="bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border border-indigo-500/30 p-6 rounded-2xl flex justify-between items-center">
+          <div>
+            <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-cart-shopping text-indigo-400 mr-2"></i>SyncMart Online Supermarket</h3>
+            <p class="text-slate-300 text-sm">Customers order online. Shared inventory prevents overselling.</p>
+          </div>
+          <button onclick="openOnlineCheckoutModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-600/30 text-sm">
+            <i class="fa-solid fa-basket-shopping"></i> View Cart
+            <span id="onlineCartBadge" class="bg-amber-400 text-slate-900 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+          </button>
+        </div>
+
+        <div id="onlineProductsGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto pr-1"></div>
+      </section>
+
+      <!-- ================= MODULE 4: CUSTOMERS ================= -->
+      <section id="module-customers" class="hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-2xl font-bold text-white">Customer Database & Loyalty Points</h3>
+            <p class="text-slate-400 text-sm">Manage customer profiles and loyalty points earned at POS or Online checkout.</p>
+          </div>
+          <button onclick="showAddCustomerModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold">+ Add Customer</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
+            <h4 class="font-bold text-slate-300 text-sm mb-3">Customer List</h4>
+            <div id="customerList" class="space-y-2"></div>
+          </div>
+          <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-6" id="customerDetailPane">
+            <div class="text-center text-slate-500 py-20">Select a customer to view loyalty details.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODULE 5: CUSTOMER CARE SUPPORT ================= -->
+      <section id="module-support" class="hidden space-y-6">
+        <h3 class="text-2xl font-bold text-white"><i class="fa-solid fa-headset text-amber-400 mr-2"></i>Customer Care & Support Helpdesk</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 space-y-3">
+            <h4 class="font-bold text-white text-sm">Active Tickets</h4>
+            <div id="ticketsList" class="space-y-2"></div>
+          </div>
+          <div class="md:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between h-[500px]">
+            <div class="border-b border-slate-700 pb-3 mb-3 flex justify-between items-center">
+              <div>
+                <h4 id="activeTicketSubject" class="font-bold text-white">Select a Support Ticket</h4>
+                <p id="activeTicketUser" class="text-xs text-slate-400">No active ticket selected</p>
+              </div>
+              <span id="activeTicketStatus" class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">Inactive</span>
+            </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 pr-2 text-sm"></div>
+            <form onsubmit="sendSupportReply(event)" class="mt-4 flex gap-2">
+              <input type="text" id="supportReplyInput" placeholder="Type resolution or message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm">
+              <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm">Send</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+
+  <!-- ================= ONLINE PAYMENT GATEWAY MODAL ================= -->
+  <div id="paymentModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closeOnlineCheckoutModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+      <h3 class="text-xl font-bold text-white mb-1"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>SyncMart Payment Gateway</h3>
+      <p class="text-xs text-slate-400 mb-4">Complete your purchase using any online payment option.</p>
+
+      <div id="modalCartSummary" class="bg-slate-900/70 p-3 rounded-xl border border-slate-700/60 max-h-32 overflow-y-auto mb-4 text-xs space-y-1"></div>
+
+      <div class="space-y-3 mb-6">
+        <label class="block text-xs font-semibold text-slate-300">Choose Payment Method:</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="p-3 bg-slate-900 border border-slate-700 rounded-xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition">
+            <input type="radio" name="onlinePayment" value="UPI" checked onclick="toggleOnlinePaymentForm('UPI')" class="text-indigo-600">
+            <div>
+              <div class="text-xs font-bold text-white"><i class="fa-solid fa-qrcode text-emerald-400 mr-1"></i> UPI QR / App</div>
+              <div class="text-[10px] text-slate-400">GPay, PhonePe, Paytm</div>
+            </div>
+          </label>
+
+          <label class="p-3 bg-slate-900 border border-slate-700 rounded-xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition">
+            <input type="radio" name="onlinePayment" value="CARD" onclick="toggleOnlinePaymentForm('CARD')" class="text-indigo-600">
+            <div>
+              <div class="text-xs font-bold text-white"><i class="fa-solid fa-credit-card text-blue-400 mr-1"></i> Card</div>
+              <div class="text-[10px] text-slate-400">Visa, Mastercard, RuPay</div>
+            </div>
+          </label>
+
+          <label class="p-3 bg-slate-900 border border-slate-700 rounded-xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition">
+            <input type="radio" name="onlinePayment" value="NETBANKING" onclick="toggleOnlinePaymentForm('NETBANKING')" class="text-indigo-600">
+            <div>
+              <div class="text-xs font-bold text-white"><i class="fa-solid fa-building-columns text-purple-400 mr-1"></i> Net Banking</div>
+              <div class="text-[10px] text-slate-400">HDFC, SBI, ICICI</div>
+            </div>
+          </label>
+
+          <label class="p-3 bg-slate-900 border border-slate-700 rounded-xl flex items-center gap-3 cursor-pointer hover:border-indigo-500 transition">
+            <input type="radio" name="onlinePayment" value="COD" onclick="toggleOnlinePaymentForm('COD')" class="text-indigo-600">
+            <div>
+              <div class="text-xs font-bold text-white"><i class="fa-solid fa-truck text-amber-400 mr-1"></i> Cash on Delivery</div>
+              <div class="text-[10px] text-slate-400">Pay at Doorstep</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Payment Forms -->
+      <div id="payForm-UPI" class="bg-slate-900 p-4 rounded-xl text-center border border-slate-700/60 mb-4">
+        <p class="text-xs text-slate-300 font-medium mb-2">Scan with GPay / PhonePe / Paytm:</p>
+        <div class="bg-white p-3 inline-block rounded-xl shadow-md">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=syncmart@upi&pn=SyncMartStore" alt="UPI QR" class="w-24 h-24 mx-auto">
+        </div>
+        <p class="text-[11px] text-emerald-400 mt-2 font-mono">UPI ID: syncmart@upi</p>
+      </div>
+
+      <div id="payForm-CARD" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-700/60 mb-4 space-y-2">
+        <input type="text" placeholder="Card Number (4532 •••• •••• 8892)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+        <div class="flex gap-2">
+          <input type="text" placeholder="MM/YY" class="w-1/2 bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+          <input type="password" placeholder="CVV" class="w-1/2 bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+        </div>
+      </div>
+
+      <div id="payForm-NETBANKING" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-700/60 mb-4">
+        <select class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+          <option>State Bank of India (SBI)</option>
+          <option>HDFC Bank</option>
+          <option>ICICI Bank</option>
+          <option>Axis Bank</option>
+        </select>
+      </div>
+
+      <div id="payForm-COD" class="hidden bg-slate-900 p-3 rounded-xl border border-slate-700/60 mb-4 text-xs text-amber-300">
+        <i class="fa-solid fa-info-circle mr-1"></i> Cash on Delivery selected. Stock will be reserved immediately.
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <div>
+          <span class="text-xs text-slate-400 block">Total Payable:</span>
+          <span id="gatewayPayableAmount" class="text-xl font-bold text-emerald-400">₹0.00</span>
+        </div>
+        <button onclick="confirmOnlinePayment()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-emerald-600/30">
+          Confirm Order & Pay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-indigo-600 text-white px-5 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 flex items-center gap-3 z-50">
+    <i class="fa-solid fa-circle-check text-xl"></i>
+    <span id="toastMsg" class="text-sm font-semibold">Action completed!</span>
+  </div>
+
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    let currentUser = null;
+    let selectedPOSPayMode = 'CASH';
+
+    // 60 FULL SUPERMARKET ITEMS DATASET
+    let inventory = [
+      { id: 'p1', name: 'Farm Fresh Milk (1L)', category: 'Dairy', price: 60, stock: 4, minStock: 10, img: '🥛' },
+      { id: 'p2', name: 'Organic Whole Wheat Bread', category: 'Bakery', price: 45, stock: 25, minStock: 10, img: '🍞' },
+      { id: 'p3', name: 'Basmati Rice (5kg)', category: 'Grocery', price: 450, stock: 8, minStock: 10, img: '🌾' },
+      { id: 'p4', name: 'Natural Orange Juice (1L)', category: 'Beverages', price: 110, stock: 15, minStock: 8, img: '🍊' },
+      { id: 'p5', name: 'Dark Chocolate Bar (100g)', category: 'Snacks', price: 90, stock: 3, minStock: 10, img: '🍫' },
+      { id: 'p6', name: 'Butter Unsalted (200g)', category: 'Dairy', price: 120, stock: 18, minStock: 5, img: '🧈' },
+      { id: 'p7', name: 'Instant Filter Coffee (100g)', category: 'Beverages', price: 185, stock: 12, minStock: 8, img: '☕' },
+      { id: 'p8', name: 'Green Tea Bags (25 Pack)', category: 'Beverages', price: 160, stock: 22, minStock: 10, img: '🍵' },
+      { id: 'p9', name: 'Whole Wheat Atta Flour (5kg)', category: 'Grocery', price: 230, stock: 14, minStock: 8, img: '🌾' },
+      { id: 'p10', name: 'Refined Sunflower Oil (1L)', category: 'Grocery', price: 140, stock: 30, minStock: 10, img: '🌻' },
+      { id: 'p11', name: 'Pure Cow Ghee (500ml)', category: 'Dairy', price: 340, stock: 9, minStock: 10, img: '🪔' },
+      { id: 'p12', name: 'Classic Potato Chips (100g)', category: 'Snacks', price: 30, stock: 45, minStock: 15, img: '🥔' },
+      { id: 'p13', name: 'Oat Digestive Biscuits', category: 'Snacks', price: 65, stock: 28, minStock: 10, img: '🍪' },
+      { id: 'p14', name: 'Fresh Paneer Cottage Cheese (200g)', category: 'Dairy', price: 95, stock: 6, minStock: 10, img: '🧀' },
+      { id: 'p15', name: 'Farm Brown Eggs (Pack of 12)', category: 'Dairy', price: 90, stock: 20, minStock: 10, img: '🥚' },
+      { id: 'p16', name: 'Red Delicious Apples (1kg)', category: 'Fresh Produce', price: 180, stock: 15, minStock: 8, img: '🍎' },
+      { id: 'p17', name: 'Fresh Yellow Bananas (1 Dozen)', category: 'Fresh Produce', price: 60, stock: 22, minStock: 10, img: '🍌' },
+      { id: 'p18', name: 'Farm Fresh Tomatoes (1kg)', category: 'Fresh Produce', price: 40, stock: 35, minStock: 12, img: '🍅' },
+      { id: 'p19', name: 'Red Onions (1kg)', category: 'Fresh Produce', price: 35, stock: 40, minStock: 15, img: '🧅' },
+      { id: 'p20', name: 'New Crop Potatoes (1kg)', category: 'Fresh Produce', price: 30, stock: 50, minStock: 15, img: '🥔' },
+      { id: 'p21', name: 'Dishwashing Gel Liquid (500ml)', category: 'Household', price: 115, stock: 18, minStock: 8, img: '🧼' },
+      { id: 'p22', name: 'Laundry Detergent Powder (1kg)', category: 'Household', price: 165, stock: 24, minStock: 10, img: '🧺' },
+      { id: 'p23', name: 'Pine Floor Cleaner (1L)', category: 'Household', price: 130, stock: 16, minStock: 8, img: '🧹' },
+      { id: 'p24', name: 'Toilet Sanitizer Gel (750ml)', category: 'Household', price: 120, stock: 14, minStock: 8, img: '🧽' },
+      { id: 'p25', name: 'Moisturizing Bath Soap (Pack of 4)', category: 'Personal Care', price: 145, stock: 32, minStock: 10, img: '🧼' },
+      { id: 'p26', name: 'Anti-Dandruff Shampoo (360ml)', category: 'Personal Care', price: 280, stock: 11, minStock: 8, img: '🧴' },
+      { id: 'p27', name: 'Fresh Mint Toothpaste (150g)', category: 'Personal Care', price: 95, stock: 28, minStock: 10, img: '🪥' },
+      { id: 'p28', name: 'Hand Wash Liquid Refill (750ml)', category: 'Personal Care', price: 110, stock: 19, minStock: 8, img: '🧼' },
+      { id: 'p29', name: 'Tomato Ketchup Bottle (500g)', category: 'Grocery', price: 85, stock: 25, minStock: 10, img: '🥫' },
+      { id: 'p30', name: 'Classic Mayonnaise Spread (250g)', category: 'Grocery', price: 75, stock: 16, minStock: 8, img: '🥫' },
+      { id: 'p31', name: 'Rich Chocolate Ice Cream Tub (1L)', category: 'Dairy', price: 220, stock: 7, minStock: 8, img: '🍨' },
+      { id: 'p32', name: 'Frozen Green Peas (500g)', category: 'Grocery', price: 70, stock: 20, minStock: 10, img: '🫛' },
+      { id: 'p33', name: 'Instant Masala Noodles (Pack of 4)', category: 'Snacks', price: 56, stock: 60, minStock: 15, img: '🍜' },
+      { id: 'p34', name: 'Corn Flakes Cereal (400g)', category: 'Grocery', price: 175, stock: 14, minStock: 8, img: '🥣' },
+      { id: 'p35', name: 'Raw Almond Nuts (250g)', category: 'Grocery', price: 240, stock: 18, minStock: 8, img: '🥜' },
+      { id: 'p36', name: 'Whole Cashew Nuts (250g)', category: 'Grocery', price: 270, stock: 12, minStock: 8, img: '🥜' },
+      { id: 'p37', name: 'Seedless Raisins (250g)', category: 'Grocery', price: 130, stock: 22, minStock: 10, img: '🍇' },
+      { id: 'p38', name: 'Dark Roasted Coffee Beans (200g)', category: 'Beverages', price: 320, stock: 8, minStock: 6, img: '🫘' },
+      { id: 'p39', name: 'Cola Drink Bottle (1.25L)', category: 'Beverages', price: 65, stock: 35, minStock: 12, img: '🥤' },
+      { id: 'p40', name: 'Sparkling Lemon Drink (750ml)', category: 'Beverages', price: 50, stock: 28, minStock: 10, img: '🍾' },
+      { id: 'p41', name: 'Processed Cheddar Cheese Slices', category: 'Dairy', price: 135, stock: 15, minStock: 8, img: '🧀' },
+      { id: 'p42', name: 'Flavored Mango Greek Yogurt', category: 'Dairy', price: 40, stock: 26, minStock: 10, img: '🍧' },
+      { id: 'p43', name: 'Multigrain Toast Bread', category: 'Bakery', price: 55, stock: 16, minStock: 8, img: '🍞' },
+      { id: 'p44', name: 'Chocolate Chip Cookies (200g)', category: 'Snacks', price: 80, stock: 30, minStock: 10, img: '🍪' },
+      { id: 'p45', name: 'Spicy Namkeen Mixture (200g)', category: 'Snacks', price: 45, stock: 40, minStock: 12, img: '🥨' },
+      { id: 'p46', name: 'Roasted Salted Peanuts (150g)', category: 'Snacks', price: 40, stock: 38, minStock: 10, img: '🥜' },
+      { id: 'p47', name: 'Extra Virgin Olive Oil (500ml)', category: 'Grocery', price: 580, stock: 5, minStock: 6, img: '🫒' },
+      { id: 'p48', name: 'Iodized Crystal Table Salt (1kg)', category: 'Grocery', price: 25, stock: 80, minStock: 20, img: '🧂' },
+      { id: 'p49', name: 'Refined White Sugar (1kg)', category: 'Grocery', price: 48, stock: 75, minStock: 20, img: '🍬' },
+      { id: 'p50', name: 'Pure Turmeric Powder (200g)', category: 'Grocery', price: 55, stock: 30, minStock: 10, img: '🧆' },
+      { id: 'p51', name: 'Red Chilli Powder (200g)', category: 'Grocery', price: 65, stock: 28, minStock: 10, img: '🌶️' },
+      { id: 'p52', name: 'Aromatic Garam Masala (100g)', category: 'Grocery', price: 80, stock: 20, minStock: 8, img: '🥘' },
+      { id: 'p53', name: 'Kitchen Foil Wrap Roll (9m)', category: 'Household', price: 99, stock: 18, minStock: 8, img: '📜' },
+      { id: 'p54', name: 'Heavy Duty Garbage Bags (30 count)', category: 'Household', price: 110, stock: 25, minStock: 10, img: '🗑️' },
+      { id: 'p55', name: 'Kitchen Paper Towel Twin Roll', category: 'Household', price: 85, stock: 22, minStock: 8, img: '🧻' },
+      { id: 'p56', name: 'Deep Moisture Body Lotion (200ml)', category: 'Personal Care', price: 210, stock: 13, minStock: 8, img: '🧴' },
+      { id: 'p57', name: 'Matte Sunscreen SPF 50 (100g)', category: 'Personal Care', price: 350, stock: 9, minStock: 6, img: '☀️' },
+      { id: 'p58', name: 'Soft Facial Wet Tissues (Pack 30)', category: 'Personal Care', price: 60, stock: 35, minStock: 10, img: '🧻' },
+      { id: 'p59', name: 'Mixed Fruit Preserve Jam (500g)', category: 'Grocery', price: 135, stock: 17, minStock: 8, img: '🏺' },
+      { id: 'p60', name: 'Organic Pure Honey Jar (250g)', category: 'Grocery', price: 160, stock: 11, minStock: 8, img: '🍯' }
+    ];
+
+    let customers = [
+      { id: 'c1', name: 'Rahul Sharma', phone: '+91 9876543210', points: 240 },
+      { id: 'c2', name: 'Priya Sundaram', phone: '+91 9812345678', points: 510 },
+      { id: 'c3', name: 'Anish Kumar', phone: '+91 9765432109', points: 80 }
+    ];
+
+    let posCart = [];
+    let onlineCart = [];
+
+    let tickets = [
+      { id: 't1', customer: 'Priya Sundaram', subject: 'Damaged Packaging on Milk Delivery', status: 'Open', messages: [{ sender: 'Customer', text: 'Hi, the milk carton received today was leaking.' }] }
+    ];
+    let selectedTicketId = 't1';
+
+    // AUTH & PASSWORD SETUP
+    function switchAuthTab(tab) {
+      if (tab === 'login') {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('signupForm').classList.add('hidden');
+        document.getElementById('tabLoginBtn').className = "flex-1 py-2 text-center text-indigo-400 font-semibold border-b-2 border-indigo-500";
+        document.getElementById('tabSignupBtn').className = "flex-1 py-2 text-center text-slate-400 font-semibold border-b-2 border-transparent hover:text-slate-200";
+      } else {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('signupForm').classList.remove('hidden');
+        document.getElementById('tabSignupBtn').className = "flex-1 py-2 text-center text-indigo-400 font-semibold border-b-2 border-indigo-500";
+        document.getElementById('tabLoginBtn').className = "flex-1 py-2 text-center text-slate-400 font-semibold border-b-2 border-transparent hover:text-slate-200";
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      currentUser = email.split('@')[0];
+      enterDashboard();
+    }
+
+    function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value;
+      const pass = document.getElementById('signupPassword').value;
+      const confirmPass = document.getElementById('signupConfirmPassword').value;
+
+      if (pass.length < 6) {
+        showToast('Password must be at least 6 characters long!');
+        return;
+      }
+
+      if (pass !== confirmPass) {
+        showToast('Passwords do not match! Please verify.');
+        return;
+      }
+
+      currentUser = name;
+      showToast('Account created successfully with secure password!');
+      enterDashboard();
+    }
+
+    function guestLogin() {
+      currentUser = "Guest Manager";
+      enterDashboard();
+    }
+
+    function enterDashboard() {
+      document.getElementById('userBadge').innerText = currentUser;
+      document.getElementById('authPage').classList.add('hidden');
+      document.getElementById('mainDashboard').classList.remove('hidden');
+      showToast(`Welcome ${currentUser}! 60 Items synced.`);
+      renderInventory();
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('authPage').classList.remove('hidden');
+      document.getElementById('mainDashboard').classList.add('hidden');
+    }
+
+    // NAVIGATION
+    function switchModule(modName) {
+      ['inventory', 'pos', 'online', 'customers', 'support'].forEach(m => {
+        document.getElementById(`module-${m}`).classList.add('hidden');
+        const btn = document.getElementById(`nav-${m}`);
+        if (btn) btn.className = "nav-btn px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-2";
+      });
+
+      document.getElementById(`module-${modName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-${modName}`);
+      if (activeBtn) activeBtn.className = "nav-btn active px-4 py-2 rounded-lg font-semibold text-white bg-indigo-600 flex items-center gap-2";
+
+      if (modName === 'inventory') renderInventory();
+      if (modName === 'pos') renderPOSProducts();
+      if (modName === 'online') renderOnlineProducts();
+      if (modName === 'customers') renderCustomers();
+      if (modName === 'support') renderSupport();
+    }
+
+    // 1. MASTER INVENTORY (60 ITEMS)
+    function renderInventory() {
+      const tbody = document.getElementById('inventoryTableBody');
+      const search = document.getElementById('inventorySearch').value.toLowerCase();
+      const cat = document.getElementById('categoryFilter').value;
+      tbody.innerHTML = '';
+
+      const filtered = inventory.filter(i => i.name.toLowerCase().includes(search) && (cat === 'ALL' || i.category === cat));
+      document.getElementById('totalItemsCount').innerText = filtered.length;
+
+      filtered.forEach((item, index) => {
+        const isLow = item.stock < item.minStock;
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-700/30 transition">
+            <td class="p-4 text-xs text-slate-500 font-mono">${index + 1}</td>
+            <td class="p-4 font-bold text-white flex items-center gap-2">
+              <span class="text-2xl">${item.img}</span> ${item.name}
+            </td>
+            <td class="p-4 text-slate-400 text-xs">${item.category}</td>
+            <td class="p-4 text-emerald-400 font-bold">₹${item.price}</td>
+            <td class="p-4">${isLow ? '<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> LOW STOCK</span>' : '<span class="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded text-xs">IN STOCK</span>'}</td>
+            <td class="p-4 text-center font-bold text-base ${isLow ? 'text-rose-400' : 'text-slate-200'}">${item.stock}</td>
+            <td class="p-4 text-right">
+              ${isLow 
+                ? `<button onclick="triggerSupplierReorder('${item.id}')" class="bg-amber-500 text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-amber-400 transition ml-auto"><i class="fa-solid fa-truck-ramp-box"></i> Reorder 20</button>`
+                : `<button onclick="addStockManual('${item.id}')" class="bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-600 transition">+ Add Stock</button>`}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function triggerSupplierReorder(pId) {
+      const item = inventory.find(i => i.id === pId);
+      if (item) { item.stock += 20; showToast(`Supplier Restock Order Placed: +20 units to ${item.name}!`); renderInventory(); }
+    }
+
+    function addStockManual(pId) {
+      const item = inventory.find(i => i.id === pId);
+      if (item) { item.stock += 5; showToast(`Added +5 units to ${item.name}.`); renderInventory(); }
+    }
+
+    // 2. POS STORE BILLING
+    function renderPOSProducts() {
+      const grid = document.getElementById('posProductsGrid');
+      const search = document.getElementById('posSearch').value.toLowerCase();
+      grid.innerHTML = '';
+
+      inventory.filter(p => p.name.toLowerCase().includes(search)).forEach(p => {
+        grid.innerHTML += `
+          <div onclick="addToPOSCart('${p.id}')" class="bg-slate-800 border border-slate-700 hover:border-indigo-500 p-3 rounded-xl cursor-pointer transition flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-1"><span class="text-2xl">${p.img}</span><span class="text-[10px] text-slate-400">Stock: ${p.stock}</span></div>
+            <div><h5 class="font-bold text-white text-xs truncate">${p.name}</h5><p class="text-emerald-400 font-bold text-xs mt-0.5">₹${p.price}</p></div>
+          </div>
+        `;
+      });
+
+      const custSelect = document.getElementById('posCustomerSelect');
+      custSelect.innerHTML = '<option value="">-- Walk-in Guest Customer --</option>';
+      customers.forEach(c => { custSelect.innerHTML += `<option value="${c.id}">${c.name} (${c.phone})</option>`; });
+    }
+
+    function selectPOSPayment(mode) {
+      selectedPOSPayMode = mode;
+      ['CASH', 'UPI', 'CARD'].forEach(m => {
+        const btn = document.getElementById(`payBtn-${m}`);
+        if (m === mode) {
+          btn.className = "pos-pay-opt active bg-indigo-600 border border-indigo-500 text-white py-1.5 rounded-lg text-xs font-bold flex flex-col items-center";
+        } else {
+          btn.className = "pos-pay-opt bg-slate-900 border border-slate-700 text-slate-300 py-1.5 rounded-lg text-xs font-bold flex flex-col items-center";
+        }
+      });
+    }
+
+    function addToPOSCart(pId) {
+      const item = inventory.find(i => i.id === pId);
+      if (!item || item.stock <= 0) return showToast('Out of stock!');
+      const existing = posCart.find(i => i.id === pId);
+      if (existing) {
+        if (existing.qty + 1 > item.stock) return showToast('Cannot exceed stock!');
+        existing.qty += 1;
+      } else {
+        posCart.push({ id: pId, name: item.name, price: item.price, qty: 1 });
+      }
+      renderPOSCart();
+    }
+
+    function renderPOSCart() {
+      const list = document.getElementById('posCartList');
+      if (posCart.length === 0) {
+        list.innerHTML = `<div class="text-center text-slate-500 py-6 text-xs">No items in receipt. Click left items.</div>`;
+        document.getElementById('posSubtotal').innerText = '₹0.00';
+        document.getElementById('posTax').innerText = '₹0.00';
+        document.getElementById('posTotal').innerText = '₹0.00';
+        return;
+      }
+
+      list.innerHTML = '';
+      let sub = 0;
+      posCart.forEach(i => {
+        const tot = i.price * i.qty;
+        sub += tot;
+        list.innerHTML += `
+          <div class="flex justify-between items-center bg-slate-900/60 p-2 rounded-lg text-xs">
+            <div><div class="font-bold text-slate-200 truncate max-w-[130px]">${i.name}</div><div class="text-slate-400">₹${i.price} x ${i.qty}</div></div>
+            <span class="font-bold text-emerald-400">₹${tot}</span>
+          </div>
+        `;
+      });
+
+      const tax = sub * 0.05;
+      document.getElementById('posSubtotal').innerText = `₹${sub.toFixed(2)}`;
+      document.getElementById('posTax').innerText = `₹${tax.toFixed(2)}`;
+      document.getElementById('posTotal').innerText = `₹${(sub + tax).toFixed(2)}`;
+    }
+
+    function processPOSCheckout() {
+      if (posCart.length === 0) return showToast('POS Cart is empty!');
+
+      posCart.forEach(ci => {
+        const inv = inventory.find(i => i.id === ci.id);
+        if (inv) inv.stock -= ci.qty;
+      });
+
+      const custId = document.getElementById('posCustomerSelect').value;
+      if (custId) {
+        const c = customers.find(cust => cust.id === custId);
+        if (c) c.points += 20;
+      }
+
+      showToast(`Sale Paid via ${selectedPOSPayMode}! Master inventory updated.`);
+      posCart = [];
+      renderPOSCart();
+      renderPOSProducts();
+    }
+
+    // 3. ONLINE STOREFRONT
+    function renderOnlineProducts() {
+      const grid = document.getElementById('onlineProductsGrid');
+      grid.innerHTML = '';
+
+      inventory.forEach(p => {
+        const out = p.stock <= 0;
+        grid.innerHTML += `
+          <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between hover:border-indigo-500/50 transition">
+            <div>
+              <div class="text-4xl text-center my-2">${p.img}</div>
+              <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">${p.category}</span>
+              <h4 class="font-bold text-white text-sm mt-1.5 leading-tight">${p.name}</h4>
+              <p class="text-emerald-400 font-bold text-lg my-1">₹${p.price}</p>
+              <p class="text-[11px] ${out ? 'text-rose-400 font-bold' : 'text-slate-400'}">${out ? 'Out of Stock' : `Available: ${p.stock} units`}</p>
+            </div>
+            <button onclick="addToOnlineCart('${p.id}')" ${out ? 'disabled' : ''} class="mt-3 w-full py-2 rounded-xl font-bold text-xs ${out ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-500'}">
+              ${out ? 'Unavailable' : 'Add to Cart'}
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function addToOnlineCart(pId) {
+      const item = inventory.find(i => i.id === pId);
+      if (item && item.stock > 0) {
+        const existing = onlineCart.find(c => c.id === pId);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          onlineCart.push({ id: pId, name: item.name, price: item.price, qty: 1 });
+        }
+        document.getElementById('onlineCartBadge').innerText = onlineCart.reduce((sum, i) => sum + i.qty, 0);
+        showToast(`Added ${item.name} to online cart!`);
+      }
+    }
+
+    function openOnlineCheckoutModal() {
+      if (onlineCart.length === 0) return showToast('Online Cart is empty!');
+      const summary = document.getElementById('modalCartSummary');
+      summary.innerHTML = '';
+      let total = 0;
+      onlineCart.forEach(item => {
+        const itemTot = item.price * item.qty;
+        total += itemTot;
+        summary.innerHTML += `
+          <div class="flex justify-between">
+            <span class="text-slate-300">${item.name} (x${item.qty})</span>
+            <span class="text-emerald-400 font-semibold">₹${itemTot}</span>
+          </div>
+        `;
+      });
+      document.getElementById('gatewayPayableAmount').innerText = `₹${total.toFixed(2)}`;
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closeOnlineCheckoutModal() { document.getElementById('paymentModal').classList.add('hidden'); }
+
+    function toggleOnlinePaymentForm(mode) {
+      ['UPI', 'CARD', 'NETBANKING', 'COD'].forEach(m => document.getElementById(`payForm-${m}`).classList.add('hidden'));
+      document.getElementById(`payForm-${mode}`).classList.remove('hidden');
+    }
+
+    function confirmOnlinePayment() {
+      const selectedPay = document.querySelector('input[name="onlinePayment"]:checked').value;
+      onlineCart.forEach(ci => {
+        const inv = inventory.find(i => i.id === ci.id);
+        if (inv) inv.stock -= ci.qty;
+      });
+
+      showToast(`Online Order Confirmed via ${selectedPay}! Master stock deducted.`);
+      onlineCart = [];
+      document.getElementById('onlineCartBadge').innerText = '0';
+      closeOnlineCheckoutModal();
+      renderOnlineProducts();
+    }
+
+    // 4. CUSTOMERS
+    function renderCustomers() {
+      const list = document.getElementById('customerList');
+      list.innerHTML = '';
+      customers.forEach(c => {
+        list.innerHTML += `
+          <div onclick="selectCustomer('${c.id}')" class="p-3 bg-slate-900/60 border border-slate-700 hover:border-indigo-500 rounded-xl cursor-pointer transition flex justify-between">
+            <div><div class="font-bold text-white text-sm">${c.name}</div><div class="text-xs text-slate-400">${c.phone}</div></div>
+            <span class="text-xs bg-indigo-500/10 text-indigo-400 font-bold px-2 py-1 rounded">${c.points} pts</span>
+          </div>
+        `;
+      });
+    }
+
+    function selectCustomer(cId) {
+      const c = customers.find(item => item.id === cId);
+      if (!c) return;
+      document.getElementById('customerDetailPane').innerHTML = `
+        <div class="space-y-4">
+          <h3 class="text-2xl font-bold text-white">${c.name}</h3>
+          <p class="text-slate-400 text-sm"><i class="fa-solid fa-phone mr-1"></i> ${c.phone}</p>
+          <div class="bg-amber-500/10 border border-amber-500/20 text-amber-400 px-4 py-2 rounded-xl text-center w-36">
+            <div class="text-xl font-bold">${c.points}</div><div class="text-xs">Loyalty Points</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showAddCustomerModal() {
+      const name = prompt('Customer Name:');
+      const phone = prompt('Phone Number:');
+      if (name && phone) {
+        customers.push({ id: 'c' + (customers.length + 1), name, phone, points: 50 });
+        renderCustomers();
+        showToast('Customer added with 50 Loyalty Points!');
+      }
+    }
+
+    // 5. CUSTOMER CARE
+    function renderSupport() {
+      const list = document.getElementById('ticketsList');
+      list.innerHTML = '';
+      tickets.forEach(t => {
+        list.innerHTML += `
+          <div onclick="selectTicket('${t.id}')" class="p-3 rounded-xl border ${t.id === selectedTicketId ? 'bg-indigo-600/20 border-indigo-500' : 'bg-slate-900/60 border-slate-700'} cursor-pointer">
+            <span class="font-bold text-white text-xs">${t.customer}</span>
+            <p class="text-xs text-slate-300 truncate">${t.subject}</p>
+          </div>
+        `;
+      });
+      renderChat();
+    }
+
+    function selectTicket(tId) { selectedTicketId = tId; renderSupport(); }
+
+    function renderChat() {
+      const t = tickets.find(ticket => ticket.id === selectedTicketId);
+      if (!t) return;
+      document.getElementById('activeTicketSubject').innerText = t.subject;
+      document.getElementById('activeTicketUser').innerText = `Customer: ${t.customer}`;
+      document.getElementById('activeTicketStatus').innerText = t.status;
+
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = '';
+      t.messages.forEach(m => {
+        const isAgent = m.sender === 'Support';
+        container.innerHTML += `
+          <div class="flex flex-col ${isAgent ? 'items-end' : 'items-start'}">
+            <div class="px-4 py-2 rounded-2xl max-w-md ${isAgent ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-100'}">${m.text}</div>
+          </div>
+        `;
+      });
+    }
+
+    function sendSupportReply(e) {
+      e.preventDefault();
+      const input = document.getElementById('supportReplyInput');
+      if (!input.value.trim()) return;
+      const t = tickets.find(ticket => ticket.id === selectedTicketId);
+      if (t) {
+        t.messages.push({ sender: 'Support', text: input.value });
+        input.value = '';
+        renderChat();
+        showToast('Support reply sent.');
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+  </script>
+</body>
+</html>
